@@ -1,0 +1,10 @@
+import { useMemo, useState } from "react";
+const currencyNames = new Intl.DisplayNames(["en"], { type: "currency" });
+function currencyLabel(code) { try { return currencyNames.of(code) || code; } catch { return code; } }
+
+export default function CurrencySelector({ value, currencies, onChange, disabled = false }) {
+  const [query, setQuery] = useState(""); const [open, setOpen] = useState(false);
+  const matches = useMemo(() => { const search = query.trim().toLowerCase(); return currencies.filter((code) => `${code} ${currencyLabel(code)}`.toLowerCase().includes(search)); }, [currencies, query]);
+  function chooseCurrency(code) { onChange(code); setQuery(""); setOpen(false); }
+  return <div className="relative w-full"><button type="button" onClick={() => setOpen((isOpen) => !isOpen)} disabled={disabled} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium text-slate-800 outline-none transition hover:border-blue-300 focus:ring-2 focus:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60" aria-expanded={open}><span>{value}</span><span className="text-slate-400">⌄</span></button>{open && <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search currencies..." className="w-full border-b border-slate-200 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400" /><ul className="max-h-56 overflow-y-auto py-1" aria-label="Currency options">{matches.length ? matches.map((code) => <li key={code}><button type="button" onClick={() => chooseCurrency(code)} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-blue-50"><span className="font-semibold text-slate-800">{code}</span><span className="ml-3 truncate text-slate-500">{currencyLabel(code)}</span></button></li>) : <li className="px-3 py-4 text-sm text-slate-500">No matching currency.</li>}</ul></div>}</div>;
+}
